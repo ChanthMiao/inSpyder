@@ -35,8 +35,17 @@ class manager(object):
         self._Session = sessionmaker(bind=self._engine)
         self._session = self._Session()
 
-    def insert_or_update_user(self, uid: str, name: str, posts_n: int,
-                              following_n: int, followers_n: int, bio: str):
+    def close(self):
+        self._session.close()
+
+    def insert_or_update_user(self,
+                              uid: str,
+                              name: str,
+                              posts_n: int,
+                              following_n: int,
+                              followers_n: int,
+                              bio: str,
+                              commit=True):
         line = self._session.query(User)\
             .filter(User.id == uid)\
             .one_or_none()
@@ -54,11 +63,17 @@ class manager(object):
             line.following = followers_n
             line.followers = followers_n
             line.biography = bio
-        self._session.commit()
+        if commit:
+            self._session.commit()
 
-    def insert_or_update_post(self, pic_id: str, pic_timestamp: int,
-                              pic_stars: int, pic_comments: int, pic_url: str,
-                              pic_uid: str):
+    def insert_or_update_post(self,
+                              pic_id: str,
+                              pic_timestamp: int,
+                              pic_stars: int,
+                              pic_comments: int,
+                              pic_url: str,
+                              pic_uid: str,
+                              commit=True):
         line = self._session.query(Post)\
             .filter(Post.id == pic_id)\
             .one_or_none()
@@ -76,7 +91,8 @@ class manager(object):
             line.comments = pic_comments
             line.url = pic_url
             line.uid = pic_uid
-        self._session.commit()
+        if commit:
+            self._session.commit()
 
     def get_uid_list(self) -> list:
         sqlRT = self._session.query(User.id).all()
@@ -99,6 +115,10 @@ class manager(object):
             rt.append(line[0])
         return rt
 
+    def get_pic_list(self) -> list:
+        sqlRT = self._session.query(Post.id, Post.url).all()
+        return sqlRT
+
     def check_uid_exist(self, Uid: str) -> bool:
         sqlRT = self._session\
                 .query(User.id)\
@@ -116,6 +136,7 @@ class manager(object):
             self.insert_or_update_post(blog["pic_id"], blog["pic_time_stamp"],
                                        blog["pic_stars"], blog["pic_comments"],
                                        blog["pic_url"], data["uid"])
+        # self._session.commit()
 
     def get_one_user_data(self, uid) -> dict:
         rt = {}

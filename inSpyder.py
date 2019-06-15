@@ -181,7 +181,9 @@ class inSpyder(object):
                 "blogs": self.rt
             })
             r_delay = random.randint(0, 2)
-            time.sleep(2 + r_delay)
+            time.sleep(1 + r_delay)
+        self.con.close()
+        self.master.close()
 
 
 if __name__ == "__main__":
