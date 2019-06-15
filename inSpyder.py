@@ -4,11 +4,15 @@ import re
 import json
 import time
 import random
+from orm.sql import manager
 
 
 class inSpyder(object):
-    def __init__(self, username: str):
-        self.user = username
+    def __init__(self, theme=""):
+        self.master = manager(
+            "postgresql://inspyder:No996icu@127.0.0.1:5432/insdata")
+        self.user_list = []
+        self.user = None
         self.id = ""
         self.biography = ""
         self.posts = 0
@@ -32,6 +36,17 @@ class inSpyder(object):
         }
         self.con = requests.Session()
         self.con.headers.update(self.sharedHeader)
+        if theme != "":
+            rank_token = str(random.random)
+            search_query = "context=blended&query=\'{0}\'&rank_token=\'{1}\'&include_reel=true".format(
+                theme, rank_token)
+            search_rt = requests.get(self.insIndex +
+                                     "/web/search/topsearch/?" + search_query)
+            search_json = search_rt.json()
+            search_json_user = search_json["users"]
+            for node in search_json_user:
+                if node["user"]["is_private"] is False:
+                    self.user_list.append(node["user"]["username"])
         # My dev env has some problems that make me unable to set proxy for requests by code.
         # Instead, I use linux env variable via shell like bash to use proxy.
         # self.con.proxies = {
@@ -55,9 +70,11 @@ class inSpyder(object):
         # load next-page-query-hash
         if self.next_page_query_hash == "":
             matched = re.search(
-                r'/static/bundles/es6/ProfilePageContainer\.js/(.*?)\.js', body)
+                r'/static/bundles/es6/ProfilePageContainer\.js/(.*?)\.js',
+                body)
             next_query_hash_uri = matched.group()
-            next_query_hash_js = self.con.get(self.insIndex + next_query_hash_uri)
+            next_query_hash_js = self.con.get(self.insIndex +
+                                              next_query_hash_uri)
             next_query_hash_js_body = next_query_hash_js.text
             matched = re.search(r'l.pagination},queryId:"(.*?)"',
                                 next_query_hash_js_body)
@@ -104,7 +121,7 @@ class inSpyder(object):
         self.curr_page = config["entry_data"]["ProfilePage"][0]["graphql"][
             "user"]["edge_owner_to_timeline_media"]["edges"]
 
-    def run(self):
+    def next_pages(self):
         next_page_url = self.insIndex + '/graphql/query/?'
         self.con.headers.update({"X_Requested_With": self.X_Requested_With})
         while True:
@@ -149,24 +166,28 @@ class inSpyder(object):
         print("-----------------------")
         print("Done!")
 
+    def run(self):
+        for curr_user in self.user_list:
+            self.user = curr_user
+            self.load_first_page()
+            self.next_pages()
+            self.master.update_one_user_data({
+                "uid": self.id,
+                "username": self.user,
+                "biography": self.biography,
+                "posts": self.posts,
+                "following": self.following,
+                "followers": self.followers,
+                "blogs": self.rt
+            })
+            r_delay = random.randint(0, 2)
+            time.sleep(2 + r_delay)
+
 
 if __name__ == "__main__":
     rt_list = []
-    with open("list.json") as name_list:
-        targets = json.load(name_list)
-        for target in targets:
-            test = inSpyder(target)
-            test.load_first_page()
-            test.run()
-            report = {
-                "uid": test.id,
-                "username": test.user,
-                "biography": test.biography,
-                "posts": test.posts,
-                "following": test.following,
-                "followers": test.followers,
-                "blogs": test.rt
-            }
-            rt_list.append(report)
-    with open("rt.json", "w") as df:
-        json.dump(rt_list, df)
+    with open("theme.json") as name_list:
+        target = json.load(name_list)
+        theme = target["theme"]
+        test = inSpyder(theme)
+        test.run()

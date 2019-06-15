@@ -1,3 +1,4 @@
 *.json
 .vscode
 *.txt
+orm/__pycache__
