@@ -1,6 +1,6 @@
 # inSpyder
 
-The inSpyer toolset provides an easy way to automatically pull users' data, including profile and posts, from instagram. All the data are stored in local database.
+The inSpyer toolset provides an easy way to automatically pull users' data, including profile and posts, from instagram with theme list. All the data are stored in local database.
 
 ## Function
 
@@ -36,4 +36,25 @@ For some reason, you may be unable to directly get access to instagram, which me
 ```bash
 export http_proxy="http://your_proxy_host:port"
 export https_proxy="http://your_proxy_host:port"
+```
+## Run
+
+Offer a theme list in ./themes.json like below. Use '+' instead of ' '.
+
+```json
+{
+    "themes": [
+        "network+security",
+        "cybersecurity",
+        "information+security"
+    ]
+}
+```
+
+Then simply call the python interrupter.
+
+```bash
+python inSpyder.py
+python pic_downloads.py
+python visual.py
 ```
