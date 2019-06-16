@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # from orm.sql import manager
+import numpy as np
 import matplotlib.pyplot as plt
 import time
 import jieba
@@ -95,14 +96,15 @@ def PostingTimeAndComments(picDataList: list, fid=None, display=False):
         utcTimeList.append(line[0])
     for times in utcTimeList:
         mytime = time.localtime(float(times))
-        postingTimeList.append(int(time.strftime("%H%M%S", mytime)))
+        postingTimeList.append(
+            int(int(time.strftime("%H%M%S", mytime)) / 10000))
     commentList = []
     for line in picDataList:
         commentList.append(int(line[1]))
     plt.figure(fid)
-    plt.xticks(postingTimeList)
-    # plt.plot(commentList, 'g^') # 散点图
-    plt.plot(commentList)  # 折线图（连续）
+    plt.xticks(np.arange(0, 24, 1))
+    plt.yticks(np.arange(0, len(commentList), len(commentList) / 15))
+    plt.scatter(postingTimeList, commentList, s=30, marker='o', alpha=0.7)
     plt.xlabel('posting time')
     plt.ylabel('comment')
     plt.title('Posting time and comments')
