@@ -165,3 +165,15 @@ class manager(object):
             return rt
         else:
             return None
+
+    def get_userless_data(self) -> list:
+        sqlRT = self._session\
+            .query(User.posts, User.following, User.followers, User.biography)\
+            .all()
+        return sqlRT
+
+    def get_idless_data(self) -> list:
+        sqlRT = self._session\
+            .query(Post.timestamp, Post.comments, Post.stars)\
+            .all()
+        return sqlRT

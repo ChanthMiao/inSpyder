@@ -3,3 +3,5 @@
 *.txt
 orm/__pycache__
 pic/*.jpg
+figures/*.png
+figures/*.jpg

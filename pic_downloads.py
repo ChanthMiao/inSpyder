@@ -21,6 +21,7 @@ class pic_downloads(object):
         self.con.headers.update(self.sharedHeader)
 
     def run(self):
+        pa = re.compile(r'\.\w+\?')
         total = len(self.pic_list)
         for starter in range(0, total, 12):
             end = starter + 12
@@ -29,14 +30,14 @@ class pic_downloads(object):
             sub_list = self.pic_list[starter:end]
             print("downloading picture {0} ~ {1}".format(starter, end))
             for pic in sub_list:
-                pic_ext = re.search(r'\.\w+\?', pic[1]).group()
+                pic_ext = pa.search(pic[1]).group()
                 pic_ext = pic_ext[0:-1]
                 pic_name = pic[0] + pic_ext
                 pic_rt = self.con.get(pic[1], stream=True)
                 with open("pic/" + pic_name, "wb") as target:
-                    for chunk in pic_rt.iter_content(256):
+                    for chunk in pic_rt.iter_content(128):
                         target.write(chunk)
-            time.sleep(1 + random.randint(0, 2))
+            time.sleep(1 + random.randint(0, 1))
         self.con.close()
 
 
