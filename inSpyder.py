@@ -60,7 +60,7 @@ class inSpyder(object):
         for theme in themes:
             search_query = "context=blended&query=\'{0}\'&rank_token=\'{1}\'&include_reel=true".format(
                 theme, rank_token)
-            search_rt = requests.get(self.insIndex +
+            search_rt = self.con.get(self.insIndex +
                                      "/web/search/topsearch/?" + search_query)
             search_json = search_rt.json()
             search_json_user = search_json["users"]
